@@ -1,6 +1,6 @@
 {
   "name": "reinst",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Reinstall all npm packages",
   "main": "cli.js",
   "files": [

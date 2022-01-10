@@ -3,6 +3,19 @@
 const fs = require('fs/promises');
 const cp = require('child_process');
 
+const dependenciesKeys = [
+  'dependencies',
+  'devDependencies',
+  'peerDependencies',
+  'optionalDependencies',
+];
+
+const installArg = {
+  devDependencies: '--save-dev',
+  peerDependencies: '--save-peer',
+  optionalDependencies: '--save-optional',
+};
+
 const exec = async (args) => {
   const p = cp.spawn('npm', args, {
     stdio: [process.stdin, process.stdout, process.stderr],
@@ -25,32 +38,22 @@ const filename = process.argv[2] || 'package.json';
   const data = await fs.readFile(filename);
   const config = JSON.parse(data.toString());
 
-  const prod = Object.keys(config.dependencies || {});
-  const dev = Object.keys(config.devDependencies || {});
-  const peer = Object.keys(config.peerDependencies || {});
-  const optional = Object.keys(config.optionalDependencies || {});
+  // to keep keys order
+  const keys = Object.keys(config).filter((k) => dependenciesKeys.includes(k));
 
-  const all = [].concat(prod, dev, peer, optional);
+  let remove = keys.map((key) => Object.keys(config[key])).flat();
+  await exec(['remove'].concat(remove));
 
-  const commands = [];
-
-  if (all.length > 0) {
-    commands.push(['remove'].concat(all));
-  }
-  if (prod.length > 0) {
-    commands.push(['install'].concat(prod));
-  }
-  if (dev.length > 0) {
-    commands.push(['install', '--save-dev'].concat(dev));
-  }
-  if (peer.length > 0) {
-    commands.push(['install', '--save-peer'].concat(peer));
-  }
-  if (optional.length > 0) {
-    commands.push(['install', '--save-optional'].concat(optional));
-  }
-
-  for (const command of commands) {
+  for (const key of keys) {
+    const packages = Object.keys(config[key]);
+    if (packages.length === 0) {
+      continue;
+    }
+    let command = ['install'];
+    if (installArg[key]) {
+      command.push(installArg[key]);
+    }
+    command = command.concat(packages);
     await exec(command);
   }
 })()
