@@ -1,0 +1,15 @@
+{
+  "name": "reinst",
+  "version": "1.0.0",
+  "description": "Reinstall all npm packages",
+  "main": "cli.js",
+  "files": [
+    "cli.js"
+  ],
+  "bin": {
+    "reinst": "./cli.js"
+  },
+  "keywords": [],
+  "author": "Dmitry Dyomin <dma01x@gmail.com>",
+  "license": "ISC"
+}
